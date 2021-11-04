@@ -1,0 +1,316 @@
+apiVersion: aam.globalsphare.com/v1alpha1
+kind: WorkloadVendor
+metadata:
+  name: redis
+spec: |
+  import "mod/context"
+
+  import "mod/auth"
+
+  import "mod/entry"
+
+  import "mod/storage"
+
+  import "mod/configmap"
+
+  parameter: {
+    image:     string
+    port:      *80 | int
+    cmd?: [...string]
+    args?: [...string]
+    cpu?: string
+    env?: [...{
+      name:   string
+      value?: string
+      valueFrom?: {
+        secretKeyRef: {
+          name: string
+          key:  string
+        }
+      }
+    }]
+    after?: string
+  }
+
+  construct: "\(context.componentName)-deployment":{
+    apiVersion: "apps/v1"
+    kind:       "Deployment"
+    metadata: {
+      name:      context.componentName
+      namespace: context.namespace
+    }
+    spec: {
+      selector: matchLabels: {
+        "app":       context.appName
+        "component": context.componentName
+      }
+
+      template: {
+        metadata: labels: {
+          "app":       context.appName
+          "component": context.componentName
+        }
+
+        spec: {
+          serviceAccountName: context.appName
+          if parameter["after"] != _|_ {
+            initContainers: [
+              {
+                name:  "init"
+                image: "harbor1.zlibs.com/island/centos:7"
+                command: ["/bin/sh"]
+                args: ["-c", "while true; do curl 'http://island-status.island-system/status/?id=\(context.namespace)&component=\(parameter.after)' | grep '\"result\":1'; if [ $? -ne 0 ]; then sleep 4s; continue; else break; fi; done"]
+              },
+            ]
+          }
+          containers: [{
+            name:  context.componentName
+            image: parameter.image
+
+            if parameter["cmd"] != _|_ {
+              command: parameter.cmd
+            }
+
+            if parameter["args"] != _|_ {
+              args: parameter.args
+            }
+
+            if parameter["env"] != _|_ {
+              env: parameter.env
+            }
+
+            if parameter["cpu"] != _|_ {
+              resources: {
+                limits:
+                  cpu: parameter.cpu
+                requests:
+                  cpu: parameter.cpu
+              }
+            }
+
+            ports: [{
+              containerPort: parameter.port
+            }]
+
+            volumeMounts: [
+              for k, v in parameter.configs if v["subPath"] != _|_ {
+                name:      "\(context.componentName)-\(k)"
+                mountPath: "\(v.path)/\(v.subPath)"
+                subPath:   v.subPath
+              }
+              for k, v in parameter.configs if v["subPath"] == _|_ {
+                name:      "\(context.componentName)-\(k)"
+                mountPath: v.path
+              }
+              if context.appName == "island-console" {
+                name:      "island-info"
+                mountPath: "/etc/island-info"
+              },
+              if parameter.storage != _|_ {
+                if parameter.storage.capacity != "" {
+                  name:      "storage-\(context.componentName)"
+                  mountPath: parameter.storage.path
+                }
+              }
+            ]
+          }, {
+            name:  "\(context.componentName)-sidecar"
+            image: "harbor1.zlibs.com/island/centos:7"
+            command: ["/bin/sh", "-c", "while true; do curl -X POST http://island-status.island-system/status/ -H 'Content-Type: application/json' -d '{\"id\": \"\(context.namespace)\",\"component\": \"\(context.componentName)\"}'; sleep 30s; done;"]
+          }]
+
+        volumes: [
+          for k, v in parameter.configs if v["subPath"] != _|_ {
+            name:      "\(context.componentName)-\(k)"
+            configMap: name: "\(context.componentName)-\(k)"
+          }
+          for k, v in parameter.configs if v["subPath"] == _|_ {
+            name:      "\(context.componentName)-\(k)"
+            configMap: name: "\(context.componentName)-\(k)"
+          }
+          if context.appName == "island-console" {
+            name: "island-info"
+            configMap: name: "island-info"
+          },
+          if parameter.storage != _|_ {
+            if parameter.storage.capacity != "" {
+              name: "storage-\(context.componentName)"
+              persistentVolumeClaim: claimName: "storage-\(context.componentName)"
+            }
+          }
+        ]
+      }
+      }
+    }
+  }
+
+  construct: "serviceinternal": {
+    apiVersion: "v1"
+    kind:       "Service"
+    metadata: {
+      name:      context.componentName
+      namespace: context.namespace
+    }
+    spec: {
+      selector: {
+        "app":       context.appName
+        "component": context.componentName
+      }
+      ports: [
+        {
+          name: "http"
+          port: 80
+          if parameter.port != _|_ {
+            targetPort: parameter.port
+          }
+          if parameter.port == _|_ {
+            targetPort: 80
+          }
+        },
+      ]
+    }
+  }
+
+  construct: "\(context.componentName)-viewer": {
+    "apiVersion": "security.istio.io/v1beta1"
+    "kind":       "AuthorizationPolicy"
+    "metadata": {
+      "name":      "\(context.componentName)-viewer"
+      "namespace": context.namespace
+    }
+    "spec": {
+      "selector": {
+        "matchLabels": {
+          "app":       context.appName
+          "component": context.componentName
+        }
+      }
+      "rules": [
+        {
+          to: [
+            {
+              operation: {
+                methods: ["GET", "POST", "DELETE", "PUT","HEAD", "OPTIONS","PATCH"]
+              }
+            },
+          ]
+        },
+      ]
+    }
+  }
+
+  parameter: {
+    entry?: {
+      host: string
+      path?: [...string]
+    }
+  }
+  if parameter["entry"]["host"] != "" {
+    ingress: "ingressgateway-http": {
+      apiVersion: "networking.istio.io/v1alpha3"
+      kind: "Gateway"
+      metadata: {
+        name: "\(context.namespace)-http"
+        namespace: "island-system"
+      }
+      spec: {
+        selector: istio: "ingressgateway"
+        servers: [
+          {
+            port: {
+              number: 80
+              name: "http"
+              protocol: "HTTP"
+            }
+            hosts: [
+              parameter["entry"]["host"],
+            ]
+          },
+        ]
+      }
+    }
+    ingress: "ingressgateway-https": {
+      apiVersion: "networking.istio.io/v1alpha3"
+      kind: "Gateway"
+      metadata: {
+        name: "\(context.namespace)-https"
+        namespace: "island-system"
+      }
+      spec: {
+        selector: istio: "ingressgateway"
+        servers: [
+          {
+            port: {
+              number: 443
+              name: "https"
+              protocol: "HTTPS"
+            }
+            tls: {
+              mode: "SIMPLE"
+              serverCertificate: "/etc/istio/ingressgateway-certs/tls.crt"
+              privateKey: "/etc/istio/ingressgateway-certs/tls.key"
+            }
+            hosts: [
+              parameter["entry"]["host"],
+            ]
+          },
+        ]
+      }
+    }
+
+    ingress: "virtualservice-http": {
+      apiVersion: "networking.istio.io/v1alpha3"
+      kind: "VirtualService"
+      metadata: {
+        name: "\(context.appName)-http"
+        namespace: context.namespace
+      }
+      spec: {
+        hosts: ["*"]
+        gateways: ["island-system/\(context.namespace)-http"]
+        http: [
+          {
+            name: context.componentName
+            if parameter.entry.path != _|_ {
+              match: []
+            }
+            route: [{
+              destination: {
+                port: number: 80
+                host: context.componentName
+              }
+            }]
+          },
+        ]
+      }
+    }
+
+    ingress: "virtualservice-https": {
+      apiVersion: "networking.istio.io/v1alpha3"
+      kind: "VirtualService"
+      metadata: {
+        name: "\(context.appName)-https"
+        namespace: context.namespace
+      }
+      spec: {
+        hosts: ["*"]
+        gateways: ["island-system/\(context.namespace)-https"]
+        http: [
+          {
+            match: []
+            route: [
+              {
+                destination: {
+                  host: context.componentName
+                  port: {
+                    number: 80
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+

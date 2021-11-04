@@ -1,0 +1,7 @@
+apiVersion: aam.globalsphare.com/v1alpha1
+kind: WorkloadType
+metadata:
+  name: redis
+spec:
+  parameter: |
+    after?: string

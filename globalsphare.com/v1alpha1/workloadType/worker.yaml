@@ -1,0 +1,21 @@
+apiVersion: aam.globalsphare.com/v1alpha1
+kind: WorkloadType
+metadata:
+  name: worker
+spec:
+  parameter: |
+    image: string
+      cmd?: [...string]
+      args?: [...string]
+      cpu?: string
+      env?: [...{
+        name:   string
+          value?: string
+          valueFrom?: {
+            secretKeyRef: {
+              name: string
+                key:  string
+            }
+          }
+      }]
+    after?: string
