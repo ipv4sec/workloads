@@ -12,7 +12,7 @@ parameter: {
 }
 if parameter["configs"] != _|_ {
   for k, v in parameter.configs {
-    outputs: {
+    construct: {
       "island-\(context.componentName)-\(k)": {
         apiVersion: "v1"
         kind:  "ConfigMap"

@@ -9,7 +9,7 @@ parameter: {
 
 if parameter.storage != _|_ {
   if parameter.storage.capacity != ""  {
-    outputs: {
+    construct: {
       "storage": {
         apiVersion: "v1"
         kind:       "PersistentVolumeClaim"
