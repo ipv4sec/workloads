@@ -45,7 +45,7 @@ if parameter["serviceentry"] != _|_ {
 
 if parameter["authorization"] != _|_ {
   for k, v in parameter.authorization {
-    outputs: "island-allow-\(context.namespace)-to-\(v.namespace)-\(v.service)": {
+    construct: "island-allow-\(context.namespace)-to-\(v.namespace)-\(v.service)": {
       apiVersion: "security.istio.io/v1beta1"
       kind: "AuthorizationPolicy"
       metadata: {

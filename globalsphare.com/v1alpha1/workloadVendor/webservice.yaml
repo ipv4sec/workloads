@@ -205,6 +205,7 @@ spec: |
       path?: [...string]
     }
   }
+  if parameter["entry"] != _|_ {
   if parameter["entry"]["host"] != "" {
     ingress: "ingressgateway-http": {
       apiVersion: "networking.istio.io/v1alpha3"
@@ -312,5 +313,6 @@ spec: |
         ]
       }
     }
+  }
   }
 
