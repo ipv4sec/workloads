@@ -206,8 +206,8 @@ spec: |
     }
   }
   if parameter["traits"] != _|_ {
-    if parameter["traits"]["globalsphare.com/v1alpha1/trait-ingress"] != _|_ {
-      "trait-ingress": "ingressgateway-http": {
+    if parameter["traits"]["globalsphare.com/v1alpha1/trait/ingress"] != _|_ {
+      "ingress": "ingressgateway-http": {
         apiVersion: "networking.istio.io/v1alpha3"
         kind: "Gateway"
         metadata: {
@@ -224,13 +224,13 @@ spec: |
                 protocol: "HTTP"
               }
               hosts: [
-                parameter["traits"]["globalsphare.com/v1alpha1/trait-ingress"]["host"],
+                parameter["traits"]["globalsphare.com/v1alpha1/trait/ingress"]["host"],
               ]
             },
           ]
         }
       }
-      "trait-ingress": "ingressgateway-https": {
+      "ingress": "ingressgateway-https": {
         apiVersion: "networking.istio.io/v1alpha3"
         kind: "Gateway"
         metadata: {
@@ -252,14 +252,14 @@ spec: |
                 privateKey: "/etc/istio/ingressgateway-certs/tls.key"
               }
               hosts: [
-                parameter["traits"]["globalsphare.com/v1alpha1/trait-ingress"]["host"],
+                parameter["traits"]["globalsphare.com/v1alpha1/trait/ingress"]["host"],
               ]
             },
           ]
         }
       }
 
-      "trait-ingress": "virtualservice-http": {
+      "ingress": "virtualservice-http": {
         apiVersion: "networking.istio.io/v1alpha3"
         kind: "VirtualService"
         metadata: {
@@ -272,7 +272,7 @@ spec: |
           http: [
             {
               name: context.componentName
-              if parameter["traits"]["globalsphare.com/v1alpha1/trait-ingress"]["http"] != _|_ {
+              if parameter["traits"]["globalsphare.com/v1alpha1/trait/ingress"]["http"] != _|_ {
                 match: []
               }
               route: [{
@@ -286,7 +286,7 @@ spec: |
         }
       }
 
-      "trait-ingress": "virtualservice-https": {
+      "ingress": "virtualservice-https": {
         apiVersion: "networking.istio.io/v1alpha3"
         kind: "VirtualService"
         metadata: {
