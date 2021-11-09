@@ -187,7 +187,7 @@ spec: |
           },{
             name:  "\(context.componentName)-sidecar"
             image: "harbor1.zlibs.com/island/centos:7"
-            command: ["/bin/sh", "-c", "while true; do curl -X PUT -H 'Content-Type: application/json' -d '{\"message\": \"\(context.componentName) 部署成功\"}' http://island-api.island-system/status/\(context.namespace)/\(context.componentName)/1; sleep 30s; done;"]
+            command: ["/bin/sh", "-c", "while true; do curl -X PUT -H 'Content-Type: application/json' -d '{\"message\": \"\(context.componentName) 部署成功\"}' http://island-api.island-system/status/\(context.namespace)/\(context.componentName)/1; | grep '\"code\":0'; if [ $? -ne 0 ]; then sleep 30s; continue; else break; fi; done"]
           }]
           volumes: [{
             name: "conf"
