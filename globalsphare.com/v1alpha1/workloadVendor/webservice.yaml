@@ -1,7 +1,7 @@
 apiVersion: aam.globalsphare.com/v1alpha1
 kind: WorkloadVendor
 metadata:
-  name: redis
+  name: webservice
 spec: |
   import "mod/context"
 
