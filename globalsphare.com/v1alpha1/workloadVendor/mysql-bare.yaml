@@ -161,9 +161,6 @@ spec: |
               name:          "mysql"
             }]
             volumeMounts: [{
-              name:      "\(context.componentName)-master"
-              mountPath: "/var/lib/mysql"
-              }, {
               name:      "conf"
               mountPath: "/etc/mysql/conf.d/mysql.cnf"
               subPath:   "my.cnf"
@@ -307,9 +304,6 @@ spec: |
               name:          "mysql"
             }]
             volumeMounts: [{
-              name:      "\(context.componentName)-slave"
-              mountPath: "/var/lib/mysql"
-            }, {
               name:      "conf"
               mountPath: "/etc/mysql/conf.d/mysql.cnf"
               subPath:   "my.cnf"
