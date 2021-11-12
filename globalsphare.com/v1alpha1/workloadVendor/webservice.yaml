@@ -279,6 +279,11 @@ spec: |
                 destination: {
                   port: number: 80
                   host: context.componentName
+                },
+                headers:{
+                  set:{
+                    host: parameter["traits"]["globalsphare.com/v1alpha1/trait/ingress"]["host"]
+                  }
                 }
               }]
             },
@@ -304,7 +309,12 @@ spec: |
                   destination: {
                     host: context.componentName
                     port: {
-                      number: 80
+                      number: 443
+                    }
+                  },
+                  headers:{
+                    set:{
+                      host: parameter["traits"]["globalsphare.com/v1alpha1/trait/ingress"]["host"]
                     }
                   }
                 }
