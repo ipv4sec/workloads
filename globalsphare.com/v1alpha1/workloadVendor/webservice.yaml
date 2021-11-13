@@ -283,7 +283,7 @@ spec: |
                 headers: {
                   request: {
                     add: {
-                      X-Forwarded-Host: parameter["traits"]["globalsphare.com/v1alpha1/trait/ingress"]["host"]
+                      "X-Forwarded-Host": parameter["traits"]["globalsphare.com/v1alpha1/trait/ingress"]["host"]
                     }
                   }
                 }
@@ -316,8 +316,8 @@ spec: |
                   },
                   headers: {
                     request: {
-                      add:{
-                        X-Forwarded-Host: parameter["traits"]["globalsphare.com/v1alpha1/trait/ingress"]["host"]
+                      add: {
+                        "X-Forwarded-Host": parameter["traits"]["globalsphare.com/v1alpha1/trait/ingress"]["host"]
                       }
                     }
                   }
