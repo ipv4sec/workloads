@@ -282,7 +282,7 @@ spec: |
                 },
                 headers: {
                   request: {
-                    set: {
+                    add: {
                       host: parameter["traits"]["globalsphare.com/v1alpha1/trait/ingress"]["host"]
                     }
                   }
@@ -316,7 +316,7 @@ spec: |
                   },
                   headers: {
                     request: {
-                      set:{
+                      add:{
                         host: parameter["traits"]["globalsphare.com/v1alpha1/trait/ingress"]["host"]
                       }
                     }
