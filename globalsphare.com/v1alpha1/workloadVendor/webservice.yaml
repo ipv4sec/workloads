@@ -200,7 +200,7 @@ spec: |
   }
 
   parameter: {
-    entry?: {
+    ingress?: {
       host: string
       path?: [...string]
     }
@@ -311,7 +311,7 @@ spec: |
                   destination: {
                     host: context.componentName
                     port: {
-                      number: 443
+                      number: 80
                     }
                   },
                   headers: {
