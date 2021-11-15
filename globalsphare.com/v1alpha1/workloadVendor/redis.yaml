@@ -24,7 +24,6 @@ spec: |
       bind 0.0.0.0
       timeout 3600
       tcp-keepalive 1
-      read_write_timeout 0
       loglevel verbose
       logfile /data/redis.log
       slowlog-log-slower-than 10000
@@ -42,7 +41,6 @@ spec: |
       bind 0.0.0.0
       timeout 3600
       tcp-keepalive 1
-      read_write_timeout 0
       loglevel verbose
       logfile /data/redis.log
       slowlog-log-slower-than 10000
