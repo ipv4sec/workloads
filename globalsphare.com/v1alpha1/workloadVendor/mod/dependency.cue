@@ -10,6 +10,7 @@ parameter: {
     }]
   }]
   serviceentry?: [...{
+    name: string
     host: string
     port: int
     protocol: string
@@ -18,11 +19,11 @@ parameter: {
   if parameter["traits"]["globalsphare.com/v1alpha1/trait/dependency"] != _|_ {
     if parameter["traits"]["globalsphare.com/v1alpha1/trait/dependency"]["serviceentry"] != _|_ {
       for k, v in parameter["traits"]["globalsphare.com/v1alpha1/trait/dependency"]["serviceentry"] {
-        dependency: "serviceentry-\(context.componentName)-\(v.host)": {
+        dependency: "serviceentry-\(context.componentName)-to-\(v.name)": {
           apiVersion: "networking.istio.io/v1alpha3"
           kind: "ServiceEntry"
           metadata: {
-            name: "\(context.componentName)-\(v.host)"
+            name: "\(context.componentName)-to-\(v.name)"
             namespace: context.namespace
           }
           spec: {
