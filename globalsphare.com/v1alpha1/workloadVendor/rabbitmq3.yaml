@@ -68,23 +68,32 @@ spec: |
   			}
   			ports: [{
   				port: 1883
+  				name: "port-1833"
   			},{
   				port: 4369
+  				name: "port-4369"
   			},{
   				port: 5671
+  				name: "port-5671"
   			},{
   				port: 5672
+  				name: "port-5672"
   			},{
   				port: 8883
+  				name: "port-8883"
   			},{
   				port: 15672
+  				name: "port-15672"
   			},{
   				port: 25672
+  				name: "port-25672"
   			},{
   				port: 61613
+  				name: "port-61613"
   			},{
   				port: 61614
+  				name: "port-61614"
   			}]
-  			type: "NodePort"
+  			type: "ClusterIP"
   		}
   }
