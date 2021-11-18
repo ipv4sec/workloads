@@ -7,6 +7,7 @@ spec: |
   import "mod/auth"
 
   parameter: {
+    image: string
     after?: string
   }
 
@@ -130,7 +131,7 @@ spec: |
             initContainers: [
               {
                 name: "init"
-                image: "harbor1.zlibs.com/island/centos:7"
+                image: parameter.image
                 command: ["/bin/sh"]
                 args: ["-c", "while true; do curl 'http://island-api.island-system/status/\(context.namespace)/\(parameter.after)' | grep '\"result\":1'; if [ $? -ne 0 ]; then sleep 4s; continue; else break; fi; done"]
               }
