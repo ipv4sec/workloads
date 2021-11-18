@@ -1,0 +1,8 @@
+apiVersion: aam.globalsphare.com/v1alpha1
+kind: WorkloadType
+metadata:
+  name: rabbitmq
+spec:
+  parameter: |
+    image: *"rabbitmq:3-management" | string
+    after?: string
