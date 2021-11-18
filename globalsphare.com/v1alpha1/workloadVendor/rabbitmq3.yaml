@@ -19,6 +19,10 @@ spec: |
   			namespace: context.namespace
   		}
   		spec:
+            selector: matchLabels: {
+              "app":       context.appName
+              "component": context.componentName
+            }
   			replicas: 1
   			template: {
   				metadata: labels: {
@@ -36,22 +40,19 @@ spec: |
   									},
   								]
   					}
-  				  containers: [{
+  				     containers: [{
   				 	    name: "main"
   							image: parameter["image"]
   							imagePullPolicy: "IfNotPresent"
-  				 }, {
+  				        }, {
   				 	    name:  "status"
   							image: "harbor1.zlibs.com/island/centos:7"
   							command: ["/bin/sh", "-c", "while true; do resp=`curl -X PUT -H 'Content-Type: application/json' -d '{\"message\": \"\(context.componentName) 部署成功\"}' http://island-api.island-system/status/\(context.namespace)/\(context.componentName)/1 | grep '\"code\":0' | wc -l `; if [[ $resp -ne 1 ]]; then sleep 30s; else sleep 3600d ; fi; done"]
-  				 }]
-  				 restartPolicy: "Always"
-  	     }
-  	   }
-  	    selector: matchLabels: {
-  						"app":       context.appName
-  						"component": context.componentName
-  			}
+  				    }]
+  				    restartPolicy: "Always"
+  	            }
+  	    }
+
   }
 
   construct: "\(context.componentName)-service": {
