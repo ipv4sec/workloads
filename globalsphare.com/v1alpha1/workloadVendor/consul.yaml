@@ -1,14 +1,9 @@
 apiVersion: aam.globalsphare.com/v1alpha1
 kind: WorkloadVendor
 metadata:
-  name: webservice
+  name: consul
 spec: |
   import "mod/context"
-
-  import "mod/auth"
-
-  import "mod/storage"
-
   import "mod/configmap"
 
   parameter: {
@@ -157,7 +152,7 @@ spec: |
       ports: [
         {
           name: "http"
-          port: 80
+          port: 8500
           if parameter.port != _|_ {
             targetPort: parameter.port
           }
@@ -196,9 +191,3 @@ spec: |
       ]
     }
   }
-
-  //引入ingress的实现
-  import "mod/ingress"
-
-  //引入dependency的实现
-  import "mod/dependency"

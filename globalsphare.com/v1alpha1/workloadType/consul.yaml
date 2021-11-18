@@ -1,0 +1,9 @@
+apiVersion: aam.globalsphare.com/v1alpha1
+kind: WorkloadType
+metadata:
+  name: consul
+spec:
+  parameter: |
+    image: string
+    port: *8500 | int
+    after?: string

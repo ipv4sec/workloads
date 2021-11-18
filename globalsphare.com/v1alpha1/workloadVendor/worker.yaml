@@ -82,6 +82,7 @@ spec: |
           containers: [{
             name:  context.componentName
             image: parameter.image
+            imagePullPolicy: "Always"
 
             if parameter["cmd"] != _|_ {
               command: parameter.cmd
