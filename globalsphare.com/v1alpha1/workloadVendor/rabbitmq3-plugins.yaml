@@ -18,9 +18,8 @@ spec: |
         namespace: context.namespace
     }
     data: {
-        "enabled_plugins": """
-        [rabbitmq_federation_management,rabbitmq_management,rabbitmq_mqtt,rabbitmq_stomp]
-        """
+        "enabled_plugins": |
+          [rabbitmq_federation_management,rabbitmq_management,rabbitmq_mqtt,rabbitmq_stomp].
     }
   }
 
