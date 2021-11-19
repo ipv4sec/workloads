@@ -80,14 +80,16 @@ spec: |
   				]
   			}
   		}
-  		volumeClaimTemplates: [{
-  			metadata: name: "storage-\(context.componentName)"
-  			spec: {
-  				accessModes: ["ReadWriteOnce"]
-  				storageClassName: "rook-ceph-block"
-  				resources: requests: storage: parameter.storage.capacity
-  			}
-  		}]
+  		if parameter["storage"] != _|_ {
+  			volumeClaimTemplates: [{
+  				metadata: name: "storage-\(context.componentName)"
+  				spec: {
+  					accessModes: ["ReadWriteOnce"]
+  					storageClassName: "rook-ceph-block"
+  					resources: requests: storage: parameter.storage.capacity
+  				}
+  			}]
+  		}
   	}
   }
 
@@ -105,41 +107,41 @@ spec: |
   		}
   		ports: [
   			{
-  				name:       http
+  				name:       "http"
   				port:       8500
   				targetPort: 8500
   			}, {
-  				name:       https
+  				name:       "https"
   				port:       8443
   				targetPort: 8443
   			}, {
-  				name:       rpc
+  				name:       "rpc"
   				port:       8400
   				targetPort: 8400
   			}, {
-  				name:       serflan - tcp
+  				name:       "serflan-tcp"
   				port:       8301
   				targetPort: 8301
   			}, {
-  				name:       serflan - udp
+  				name:       "serflan-udp"
   				port:       8301
   				targetPort: 8301
   				protocol:   "UDP"
   			}, {
-  				name:       serfwan - tcp
+  				name:       "serfwan-tcp"
   				port:       8302
   				targetPort: 8302
   			}, {
-  				name:       serfwan - udp
+  				name:       "serfwan-udp"
   				port:       8302
   				targetPort: 8302
   				protocol:   "UDP"
   			}, {
-  				name:       server
+  				name:       "server"
   				port:       8300
   				targetPort: 8300
   			}, {
-  				name:       consuldns
+  				name:       "consuldns"
   				port:       8600
   				targetPort: 8600
   			},
