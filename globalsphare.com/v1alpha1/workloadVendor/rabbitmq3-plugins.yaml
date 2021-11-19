@@ -64,7 +64,7 @@ spec: |
               restartPolicy: "Always"
               volumeMounts:[{
                 mountPath: "/etc/rabbitmq/enabled_plugins"
-                name: conf
+                name: "conf"
                 subPath: "enabled_plugins"
               }]
               volumes: [{
