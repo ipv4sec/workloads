@@ -68,7 +68,7 @@ spec: |
                 subPath: "enabled_plugins"
               }]
               volumes: [{
-                  name: conf
+                  name: "conf"
                   configMap:
                     name: context.componentName
               }]
