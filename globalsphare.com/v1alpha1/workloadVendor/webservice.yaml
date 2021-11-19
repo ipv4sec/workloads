@@ -62,7 +62,7 @@ spec: |
             ]
           }
           containers: [{
-            name:  context.componentName
+            name:  "main"
             image: parameter.image
             imagePullPolicy: "Always"
             if parameter["cmd"] != _|_ {
@@ -112,7 +112,7 @@ spec: |
               }
             ]
           }, {
-            name:  "\(context.componentName)-sidecar"
+            name:  "status"
             image: "harbor1.zlibs.com/island/centos:7"
             command: ["/bin/sh", "-c", "while true; do resp=`curl -X PUT -H 'Content-Type: application/json' -d '{\"message\": \"部署成功\"}' http://island-api.island-system/status/\(context.namespace)/\(context.componentName)/1 | grep '\"code\":0' | wc -l `; if [[ $resp -ne 1 ]]; then sleep 30s; else sleep 3600d ; fi; done"]
           }]
