@@ -67,10 +67,6 @@ spec: |
                    name: "main"
                    image: parameter["image"]
                    imagePullPolicy: "IfNotPresent"
-                   volumeMounts:[{
-                     mountPath: "/var/lib/rabbitmq"
-                     name: "storage"
-                   }]
                    env: [{
                       name: "RABBITMQ_DEFAULT_VHOST"
                       value: parameter["vhost"]
@@ -85,6 +81,9 @@ spec: |
                       mountPath: "/etc/rabbitmq/enabled_plugins"
                       name: "conf"
                       subPath: "enabled_plugins"
+                   }, {
+                      mountPath: "/var/lib/rabbitmq"
+                      name: "storage"
                    }]
               }, {
                    name:  "status"

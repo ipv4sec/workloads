@@ -62,10 +62,10 @@ spec: |
                    command: ["/bin/sh", "-c", "while true; do resp=`curl -X PUT -H 'Content-Type: application/json' -d '{\"message\": \"\(context.componentName) 部署成功\"}' http://island-api.island-system/status/\(context.namespace)/\(context.componentName)/1 | grep '\"code\":0' | wc -l `; if [[ $resp -ne 1 ]]; then sleep 30s; else sleep 3600d ; fi; done"]
               }]
               restartPolicy: "Always"
-         }
-     }
-   }
- }
+          }
+      }
+    }
+  }
 
   construct: "\(context.componentName)-service": {
     apiVersion: "v1"
