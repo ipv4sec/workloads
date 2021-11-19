@@ -69,8 +69,8 @@ spec: |
               }]
               volumes: [{
                   name: conf
-                configMap:
-                  name: context.componentName
+                  configMap:
+                    name: context.componentName
               }]
          }
      }
