@@ -5,4 +5,8 @@ metadata:
 spec:
   parameter: |
     image: *"rabbitmq:3-management" | string
+    vhost: *"my_vhost" | string
+    user: *"admin" | string
+    password: *"123456" | string
+    size: *"1G" | string
     after?: string

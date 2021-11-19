@@ -1,7 +1,7 @@
 apiVersion: aam.globalsphare.com/v1alpha1
 kind: WorkloadVendor
 metadata:
-  name: rabbitmq3
+  name: rabbitmq3-ceph
 spec: |
   import "mod/context"
 
@@ -15,9 +15,9 @@ spec: |
   }
 
 
-  construct: "\(context.componentName)-deployment": {
+  construct: "\(context.componentName)-statefulset": {
     apiVersion: "apps/v1"
-    kind: "Deployment"
+    kind: "StatefulSet"
     metadata: {
       name: context.componentName
       namespace: context.namespace
@@ -27,7 +27,15 @@ spec: |
         "app":       context.appName
         "component": context.componentName
       }
-      replicas: 1
+      serviceName: context.componentName
+      volumeClaimTemplates: [{
+        metadata: name: "storage"
+        spec: {
+          accessModes: ["ReadWriteOnce"]
+          storageClassName: "rook-ceph-block"
+          resources: requests: storage: parameter["size"]
+        }
+      }]
       template: {
           metadata: labels: {
               "app":       context.appName
@@ -46,6 +54,10 @@ spec: |
                    name: "main"
                    image: parameter["image"]
                    imagePullPolicy: "IfNotPresent"
+                   volumeMounts:[{
+                     mountPath: "/var/lib/rabbitmq"
+                     name: "storage"
+                   }]
                    env: [{
                       name: "RABBITMQ_DEFAULT_VHOST"
                       value: parameter["vhost"]
