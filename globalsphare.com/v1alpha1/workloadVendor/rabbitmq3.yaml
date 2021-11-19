@@ -7,6 +7,10 @@ spec: |
 
   parameter: {
     image: *"rabbitmq:3-management" | string
+    vhost: *"my_vhost" | string
+    user: *"admin" | string
+    password: *"123456" | string
+    size: *"1G" | string
     after?: string
   }
 
@@ -42,6 +46,16 @@ spec: |
                    name: "main"
                    image: parameter["image"]
                    imagePullPolicy: "IfNotPresent"
+                   env: [{
+                      name: "RABBITMQ_DEFAULT_VHOST"
+                      value: parameter["vhost"]
+                   },{
+                      name: "RABBITMQ_DEFAULT_USER"
+                      value: parameter["user"]
+                   },{
+                      name: "RABBITMQ_DEFAULT_PASS"
+                      value: parameter["password"]
+                   }]
               }, {
                    name:  "status"
                    image: "harbor1.zlibs.com/island/centos:7"
