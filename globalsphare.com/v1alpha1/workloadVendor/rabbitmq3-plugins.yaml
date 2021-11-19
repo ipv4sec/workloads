@@ -18,8 +18,9 @@ spec: |
         namespace: context.namespace
     }
     data: {
-        "enabled_plugins": |
-          [rabbitmq_federation_management,rabbitmq_management,rabbitmq_mqtt,rabbitmq_stomp].
+        "enabled_plugins": """
+        [rabbitmq_federation_management,rabbitmq_management,rabbitmq_mqtt,rabbitmq_stomp].
+        """
     }
   }
 
@@ -68,7 +69,7 @@ spec: |
               restartPolicy: "Always"
               volumes: [{
                   name: "conf"
-                  configMap: name: context.componentName
+                  configMap: name: "\(context.componentName)"
               }]
          }
      }
