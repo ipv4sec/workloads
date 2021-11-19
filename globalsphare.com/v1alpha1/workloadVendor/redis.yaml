@@ -165,7 +165,7 @@ spec: |
             ]
           }
           containers: [{
-            name:  "\(context.componentName)-master"
+            name:  "main"
             image: "harbor1.zlibs.com/dockerhub/redis:6.2.4"
             ports: [{
               containerPort: 6379
@@ -181,7 +181,7 @@ spec: |
               subPath:   "master"
             }]
           }, {
-            name:  "\(context.componentName)-sidecar"
+            name:  "status"
             image: "harbor1.zlibs.com/island/centos:7"
             command: ["/bin/sh", "-c", "while true; do resp=`curl -s -X PUT -H 'Content-Type: application/json' -d '{\"message\": \"部署成功\"}' http://island-api.island-system/status/\(context.namespace)/\(context.componentName)/1 | grep '\"code\":0' | wc -l `; if [[ $resp -ne 1 ]]; then sleep 30s; else sleep 3600d ; fi; done"]
           }]
