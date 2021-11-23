@@ -1,0 +1,255 @@
+apiVersion: aam.globalsphare.com/v1alpha1
+kind: WorkloadVendor
+metadata:
+  name: kafka
+spec: |
+  import "mod/context"
+
+  import "mod/configmap"
+
+  parameter: {
+  	after?: string
+  }
+
+  construct: "\(context.componentName)-zk-headless-service": {
+  	apiVersion: "v1"
+  	kind:       "Service"
+  	metadata: {
+  		name: "zk-hs"
+  		labels: {
+  			app: "\(context.componentName)-zk"
+  		}
+  		namespace: context.namespace
+  	}
+  	spec: {
+  		selector: {
+  			app: "\(context.componentName)-zk"
+  		}
+  		clusterIP: "None"
+  		ports: [{
+  			name: "server"
+  			port: 2888
+  		}, {
+  			name: "leader-election"
+  			port: 3888
+  		}]
+  	}
+  }
+  construct: "\(context.componentName)-zk-service": {
+  	apiVersion: "v1"
+  	kind:       "Service"
+  	metadata: {
+  		name: "zk-sv"
+  		labels: {
+  			app: "\(context.componentName)-zk"
+  		}
+  		namespace: context.namespace
+  	}
+  	spec: {
+  		selector: {
+  			app: "\(context.componentName)-zk"
+  		}
+  		ports: [{
+  			name: "client"
+  			port: 2181
+  		}]
+  	}
+  }
+  construct: "\(context.componentName)-zk-StatefulSet": {
+  	apiVersion: "apps/v1"
+  	kind:       "StatefulSet"
+  	metadata: {
+  		name:      "\(context.componentName)-zk"
+  		namespace: context.namespace
+  	}
+  	spec: {
+  		serviceName: "zk-hs"
+  		replicas:    3
+  		selector: {
+  			matchLabels: {
+  				app: "\(context.componentName)-zk"
+  			}
+  		}
+  		template: {
+  			metadata: {
+  				labels: {
+  					app: "\(context.componentName)-zk"
+  				}
+  			}
+  			spec: {
+                serviceAccountName: context.appName
+  				containers: [{
+  					name:            "main"
+  					imagePullPolicy: "Always"
+  					image:           "fastop/zookeeper:3.4.10"
+  					ports: [{
+  						containerPort: 2181
+  						name:          "client"
+  					}, {
+  						containerPort: 2888
+  						name:          "server"
+  					}, {
+  						containerPort: 3888
+  						name:          "leader-election"
+  					}]
+  					command: [
+  						"sh",
+  						"-c",
+  						"start-zookeeper --servers=3 --data_dir=/var/lib/zookeeper/data --data_log_dir=/var/lib/zookeeper/data/log --conf_dir=/opt/zookeeper/conf --client_port=2181 --election_port=3888 --server_port=2888 --tick_time=2000 --init_limit=10 --sync_limit=5 --heap=1G --max_client_cnxns=60 --snap_retain_count=3 --purge_interval=12 --max_session_timeout=40000 --min_session_timeout=4000 --log_level=INFO"]
+  					readinessProbe: {
+  						exec: {
+  							command: [
+  								"sh",
+  								"-c",
+  								"zookeeper-ready 2181",
+  							]
+  						}
+  						initialDelaySeconds: 10
+  						timeoutSeconds:      5
+  					}
+  					livenessProbe: {
+  						exec: {
+  							command: [
+  								"sh",
+  								"-c",
+  								"zookeeper-ready 2181",
+  							]
+  						}
+  						initialDelaySeconds: 5
+  						timeoutSeconds:      5
+  					}
+  				}]
+  			}
+  		}
+  	}
+  }
+
+  construct: "\(context.componentName)-kafka-headless-service": {
+  	apiVersion: "v1"
+  	kind:       "Service"
+  	metadata: {
+  		name:      "\(context.componentName)-kafka-hs"
+  		namespace: context.namespace
+  		labels: {
+  			app: "\(context.componentName)-kafka"
+  		}
+  	}
+  	spec: {
+  		ports: [{
+  			port: 9092
+  			name: "server"
+  		}]
+  		clusterIP: "None"
+  		selector: {
+  			app: "kafka"
+  		}
+  	}
+  }
+  construct: "\(context.componentName)-kafka-service": {
+  	apiVersion: "v1"
+  	kind:       "Service"
+  	metadata: {
+  		name:      "\(context.componentName)"
+  		namespace: "\(context.namespace)"
+  		labels: {
+  			app: "\(context.componentName)-kafka"
+  		}
+  	}
+  	spec: {
+  		selector: {
+  			app: "\(context.componentName)-kafka"
+  		}
+  		ports: [{
+  			name: "client"
+  			port: 9092
+  		}]
+  	}
+  }
+  construct: "\(context.componentName)-kafka-StatefulSet": {
+  	apiVersion: "apps/v1"
+  	kind:       "StatefulSet"
+  	metadata: {
+  		name:      "\(context.componentName)-kafka"
+  		namespace: "\(context.namespace)"
+  	}
+  	spec: {
+  		serviceName: "\(context.componentName)-kafka-hs"
+  		replicas:    1
+  		selector: {
+  			matchLabels: {
+  				app: "\(context.componentName)-kafka"
+  			}
+  		}
+  		template: {
+  			metadata: {
+  				labels: {
+  					app: "\(context.componentName)-kafka"
+  				}
+  			}
+  			spec: {
+                serviceAccountName: context.appName
+  				if parameter["after"] != _|_ {
+  					initContainers: [
+  						{
+  							name:  "init"
+  							image: "harbor1.zlibs.com/island/centos:7"
+  							command: ["/bin/sh"]
+  							args: ["-c", "while true; do curl 'http://island-api.island-system/status/\(context.namespace)/\(parameter.after)' | grep '\"result\":1'; if [ $? -ne 0 ]; then sleep 4s; continue; else break; fi; done"]
+  						},
+  					]
+  				}
+  				containers: [{
+  					name:            "main"
+  					imagePullPolicy: "IfNotPresent"
+  					image:           "registry.cn-hangzhou.aliyuncs.com/jaxzhai/k8skafka:v1"
+  					ports: [{
+  						containerPort: 9092
+  						name:          "server"
+  					}]
+  					command: [
+  						"sh",
+  						"-c",
+  						"exec kafka-server-start.sh /opt/kafka/config/server.properties --override broker.id=0 --override listeners=PLAINTEXT://:9092 --override zookeeper.connect=zk-0.zk-sv.\(context.namespace).svc.cluster.local:2181,zk-1.zk-sv.\(context.namespace).svc.cluster.local:2181,zk-2.zk-sv.\(context.namespace).svc.cluster.local:2181 --override log.dir=/var/lib/kafka --override auto.create.topics.enable=true --override auto.leader.rebalance.enable=true --override background.threads=10 --override compression.type=producer --override delete.topic.enable=true --override leader.imbalance.check.interval.seconds=300 --override leader.imbalance.per.broker.percentage=10 --override log.flush.interval.messages=9223372036854775807 --override log.flush.offset.checkpoint.interval.ms=60000 --override log.flush.scheduler.interval.ms=9223372036854775807 --override log.retention.bytes=-1 --override log.retention.hours=168 --override log.roll.hours=168 --override log.roll.jitter.hours=0 --override log.segment.bytes=1073741824 --override log.segment.delete.delay.ms=60000 --override message.max.bytes=1000012 --override min.insync.replicas=1 --override num.io.threads=8 --override num.network.threads=3 --override num.recovery.threads.per.data.dir=1 --override num.replica.fetchers=1 --override offset.metadata.max.bytes=4096 --override offsets.commit.required.acks=-1 --override offsets.commit.timeout.ms=5000 --override offsets.load.buffer.size=5242880 --override offsets.retention.check.interval.ms=600000 --override offsets.retention.minutes=1440  --override offsets.topic.compression.codec=0 --override offsets.topic.num.partitions=50 --override offsets.topic.replication.factor=3 --override offsets.topic.segment.bytes=104857600 -override queued.max.requests=500 --override quota.consumer.default=9223372036854775807 --override quota.producer.default=9223372036854775807 --override replica.fetch.min.bytes=1 --override replica.fetch.wait.max.ms=500 --override replica.high.watermark.checkpoint.interval.ms=5000  --override replica.lag.time.max.ms=10000 --override replica.socket.receive.buffer.bytes=65536 --override replica.socket.timeout.ms=30000 --override request.timeout.ms=30000 --override socket.receive.buffer.bytes=102400 --override socket.request.max.bytes=104857600 --override socket.send.buffer.bytes=102400 --override unclean.leader.election.enable=true --override zookeeper.session.timeout.ms=6000 --override zookeeper.set.acl=false  --override broker.id.generation.enable=true --override connections.max.idle.ms=600000 --override controlled.shutdown.enable=true --override controlled.shutdown.max.retries=3  --override controlled.shutdown.retry.backoff.ms=5000 --override controller.socket.timeout.ms=30000 --override default.replication.factor=1  --override fetch.purgatory.purge.interval.requests=1000 --override group.max.session.timeout.ms=300000  --override group.min.session.timeout.ms=6000 --override inter.broker.protocol.version=0.10.2-IV0 --override log.cleaner.backoff.ms=15000 --override log.cleaner.dedupe.buffer.size=134217728 --override log.cleaner.delete.retention.ms=86400000 --override log.cleaner.enable=true --override log.cleaner.io.buffer.load.factor=0.9 --override log.cleaner.io.buffer.size=524288 --override log.cleaner.io.max.bytes.per.second=1.7976931348623157E308 --override log.cleaner.min.cleanable.ratio=0.5 --override log.cleaner.min.compaction.lag.ms=0  --override log.cleaner.threads=1 --override log.cleanup.policy=delete  --override log.index.interval.bytes=4096 --override log.index.size.max.bytes=10485760 --override log.message.timestamp.difference.max.ms=9223372036854775807 --override log.message.timestamp.type=CreateTime --override log.preallocate=false --override log.retention.check.interval.ms=300000 --override max.connections.per.ip=2147483647 --override num.partitions=1 --override producer.purgatory.purge.interval.requests=1000 --override replica.fetch.backoff.ms=1000 --override replica.fetch.max.bytes=1048576 -override replica.fetch.response.max.bytes=10485760 --override reserved.broker.max.id=1000",
+  					]
+  					env: [{
+  						name:  "KAFKA_HEAP_OPTS"
+  						value: "-Xmx1G -Xms1G"
+  					}, {
+  						name:  "KAFKA_OPTS"
+  						value: "-Dlogging.level=INFO"
+  					}]
+  					volumeMounts: []
+  					readinessProbe: {
+  						exec: {
+  							command: [
+  								"sh",
+  								"-c",
+  								"/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server=localhost:9092"]
+  						}
+  					}
+  				}, {
+  					name:  "status"
+  					image: "harbor1.zlibs.com/island/centos:7"
+  					command: ["/bin/sh", "-c", "while true; do resp=`curl -X PUT -H 'Content-Type: application/json' -d '{\"message\": \"部署成功\"}' http://island-api.island-system/status/\(context.namespace)/\(context.componentName)/1 | grep '\"code\":0' | wc -l `; if [[ $resp -ne 1 ]]; then sleep 30s; else sleep 3600d ; fi; done"]
+  				}]
+  			}
+  		}
+  	}
+  }
+  construct: "\(context.componentName)-zk-AuthorizationPolicy": {
+  	apiVersion: "security.istio.io/v1beta1"
+  	kind:       "AuthorizationPolicy"
+  	metadata: {
+  		name:      "\(context.namespace)-to\(context.namespace)-zk"
+  		namespace: context.namespace
+  	}
+  	spec: {
+  		action: "ALLOW"
+  		rules: [{}]
+  	}
+  }
+
+
+
+
+
