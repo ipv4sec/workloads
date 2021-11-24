@@ -4,4 +4,7 @@ metadata:
   name: kafka
 spec:
   parameter: |
+    storage: {
+      capacity: string | "2Gi"
+    }
     after?: string

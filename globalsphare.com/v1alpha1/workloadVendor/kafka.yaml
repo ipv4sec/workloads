@@ -8,6 +8,9 @@ spec: |
   import "mod/configmap"
 
   parameter: {
+  	storage: {
+  		capacity: string | "2Gi"
+  	}
   	after?: string
   }
 
@@ -77,7 +80,7 @@ spec: |
   				}
   			}
   			spec: {
-                serviceAccountName: context.appName
+  				serviceAccountName: context.appName
   				containers: [{
   					name:            "main"
   					imagePullPolicy: "Always"
@@ -165,7 +168,7 @@ spec: |
   				}
   			}
   			spec: {
-                serviceAccountName: context.appName
+  				serviceAccountName: context.appName
   				if parameter["after"] != _|_ {
   					initContainers: [
   						{
@@ -196,7 +199,12 @@ spec: |
   						name:  "KAFKA_OPTS"
   						value: "-Dlogging.level=INFO"
   					}]
-  					volumeMounts: []
+  					volumeMounts: [
+  						{
+  							name:      "\(context.componentName)-kafka"
+  							mountPath: "/var/lib/kafka"
+  						},
+  					]
   				}, {
   					name:  "status"
   					image: "harbor1.zlibs.com/island/centos:7"
@@ -204,6 +212,16 @@ spec: |
   				}]
   			}
   		}
+  		volumeClaimTemplates: [{
+  			metadata: {
+  				name: "\(context.componentName)-kafka"
+  			}
+  			spec: {
+  				accessModes: ["ReadWriteOnce"]
+  				storageClassName: "rook-ceph-block"
+  				resources: requests: storage: parameter.storage.capacity
+  			}
+  		}]
   	}
   }
   construct: "\(context.componentName)-zk-AuthorizationPolicy": {
