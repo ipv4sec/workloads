@@ -98,10 +98,30 @@ spec: |
   					command: [
   						"sh",
   						"-c",
-  						"start-zookeeper --servers=3 --data_dir=/var/lib/zookeeper/data --data_log_dir=/var/lib/zookeeper/data/log --conf_dir=/opt/zookeeper/conf --client_port=2181 --election_port=3888 --server_port=2888 --tick_time=2000 --init_limit=10 --sync_limit=5 --heap=1G --max_client_cnxns=60 --snap_retain_count=3 --purge_interval=12 --max_session_timeout=40000 --min_session_timeout=4000 --log_level=INFO"]
+  						"start-zookeeper --servers=3 --data_dir=/var/lib/zookeeper/data --data_log_dir=/var/lib/zookeeper/data/log --conf_dir=/opt/zookeeper/conf --client_port=2181 --election_port=3888 --server_port=2888 --tick_time=2000 --init_limit=10 --sync_limit=5 --heap=1G --max_client_cnxns=60 --snap_retain_count=3 --purge_interval=12 --max_session_timeout=40000 --min_session_timeout=4000 --log_level=INFO",
+  					]
+  					volumeMounts: [
+  						{
+  							name:      "\(context.componentName)-zk"
+  							mountPath: "/var/lib/zookeeper"
+  						}]
   				}]
   			}
   		}
+  		volumeClaimTemplates: [{
+  			metadata: {
+  				name: "\(context.componentName)-zk"
+  			}
+  			spec: {
+  				accessModes: ["ReadWriteOnce"]
+  				storageClassName: "rook-ceph-block"
+  				resources: {
+  					requests: {
+  						storage: "1Gi"
+  					}
+  				}
+  			}
+  		}]
   	}
   }
 
@@ -122,7 +142,7 @@ spec: |
   		}]
   		clusterIP: "None"
   		selector: {
-  			app: "kafka"
+  			app: "\(context.componentName)-kafka"
   		}
   	}
   }
@@ -236,3 +256,5 @@ spec: |
   		rules: [{}]
   	}
   }
+
+
