@@ -4,6 +4,7 @@ metadata:
   name: rabbitmq3
 spec: |
   import "mod/context"
+  import "mod/auth"
 
   parameter: {
     image: *"rabbitmq:3-management" | string
