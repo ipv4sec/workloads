@@ -142,7 +142,7 @@ spec: |
   		}]
   		clusterIP: "None"
   		selector: {
-  			app: "kafka"
+  			app: "\(context.componentName)-kafka"
   		}
   	}
   }
