@@ -56,6 +56,7 @@ spec: |
               "component": context.componentName
           }
           spec: {
+              serviceAccountName: context.appName
               if parameter["after"] != _|_ {
                 initContainers: [{
                     name:  "init"
