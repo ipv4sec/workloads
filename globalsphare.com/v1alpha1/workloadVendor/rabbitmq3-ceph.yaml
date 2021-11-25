@@ -4,6 +4,7 @@ metadata:
   name: rabbitmq3-ceph
 spec: |
   import "mod/context"
+  import "mod/auth"
 
   parameter: {
     image: *"rabbitmq:3-management" | string
@@ -32,7 +33,7 @@ spec: |
         metadata: name: "storage"
         spec: {
           accessModes: ["ReadWriteOnce"]
-          storageClassName: "rook-ceph-block"
+          storageClassName: "rook-cephfs"
           resources: requests: storage: parameter["size"]
         }
       }]
