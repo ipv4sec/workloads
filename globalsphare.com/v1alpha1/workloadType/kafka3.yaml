@@ -1,0 +1,11 @@
+apiVersion: aam.globalsphare.com/v1alpha1
+kind: WorkloadType
+metadata:
+  name: kafka
+spec:
+  parameter: |
+    image: *"harbor1.zlibs.com/hub/bitnami/kafka:3" | string
+    zookeeper: *"zookeeper:2181" | string
+    port: *9092 | int
+    size: *"1G" | string
+    after?: string

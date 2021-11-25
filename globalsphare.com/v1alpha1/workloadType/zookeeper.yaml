@@ -1,0 +1,10 @@
+apiVersion: aam.globalsphare.com/v1alpha1
+kind: WorkloadType
+metadata:
+  name: zookeeper
+spec:
+  parameter: |
+    image: *"harbor1.zlibs.com/hub/bitnami/zookeeper:3.7" | string
+    port: *2181 | int
+    size: *"1G" | string
+    after?: string
